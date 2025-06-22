@@ -13,14 +13,14 @@ import java.util.*;
         name = "friword-finder",
         mixinStandardHelpOptions = true,
         version = "1.0",
-        description = "Says Hello or Goodbye"
+        description = "Helps find words from provided dictionary"
 )
 public class Main implements Runnable {
 
-    @Parameters(index = "0", description = "Action: PrintAll, FindWord")
+    @Parameters(index = "0", description = "Action: FindWord, PrintAll, IsWord")
     private String action;
 
-    @Parameters(index = "1", description = "Value for action")
+    @CommandLine.Option(names = {"-v", "--value"}, description = "Value for action")
     private String value;
 
     public static void main(String[] args) {
@@ -48,12 +48,21 @@ public class Main implements Runnable {
             case "printall":
                 System.out.println(Words);
                 break;
-            case "findword":
-                if (Words.contains(value.toLowerCase())){
-                System.out.println(value.substring(0,1).toUpperCase() +
-                        value.substring(1).toLowerCase() +
-                        " found in dictonary");
-            }
+            case "isword":
+                if (value == null){
+                    System.out.println("You must provide value for this command. Use -v or --value options");
+                } else {
+                    String capValue = value.substring(0,1).toUpperCase() +
+                            value.substring(1).toLowerCase();
+                    if (Words.contains(value.toLowerCase())){
+                        System.out.println(capValue + " found in dictionary");
+                    } else {
+                        System.out.println(capValue + " not found in dictionary");
+                    }
+                }
+                break;
+            default:
+                System.out.println("Unknown Action: Use -h or --help to see all actions.");
         }
     }
 }
