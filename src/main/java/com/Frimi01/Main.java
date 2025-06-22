@@ -17,17 +17,11 @@ import java.util.*;
 )
 public class Main implements Runnable {
 
-    @Parameters(index = "0", description = "The greeting type: 'hello' or 'goodbye'")
-    private String greeting;
-
-    @Parameters(index = "1", description = "Something to print")
-    private String printable;
-
-    @Parameters(index = "2", description = "Action: PrintAll, FindWord")
+    @Parameters(index = "0", description = "Action: PrintAll, FindWord")
     private String action;
 
-    @Parameters(index = "3", description = "Value for action")
-private String value;
+    @Parameters(index = "1", description = "Value for action")
+    private String value;
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -50,25 +44,16 @@ private String value;
     public void run() {
         Set<String> Words = loadDictionaryTxt("assets/words.txt");
 
-        switch (greeting.toLowerCase()) {
-            case "hello":
-                System.out.println("Hello, world!");
-                break;
-            case "goodbye":
-                System.out.println("Goodbye, world!");
-                break;
-            default:
-                System.out.println("Unknown greeting: " + greeting);
-                System.out.println("Please use 'hello' or 'goodbye'");
-        }
-        System.out.println(printable);
-
         switch (action.toLowerCase()) {
             case "printall":
                 System.out.println(Words);
                 break;
             case "findword":
-                System.out.println(Words.contains(value.toLowerCase()));
+                if (Words.contains(value.toLowerCase())){
+                System.out.println(value.substring(0,1).toUpperCase() +
+                        value.substring(1).toLowerCase() +
+                        " found in dictonary");
+            }
         }
     }
 }
