@@ -45,6 +45,7 @@ public class Main implements Runnable {
     }
 
 
+    // findPermutations("", value, i, foundWords);
     private void findPermutations(String prefix, String remaining, int targetLength, Set<String> results) {
         if (prefix.length() == targetLength) {
             results.add(prefix);
@@ -101,7 +102,14 @@ public class Main implements Runnable {
                 }
 
                 validWords.sort((a, b) -> Integer.compare(b.length(), a.length()));
-                System.out.println("Found words: " + validWords);
+                System.out.printf("Total words found: %d\nnr| len | word\n", validWords.toArray().length);
+                for (int i = 0; i < validWords.size(); i++) {
+                    if (i < 9){
+                        System.out.printf("%d.  (%d) | %s\n", i + 1, validWords.get(i).length(),validWords.get(i));
+                    } else{
+                        System.out.printf("%d. (%d) | %s\n", i + 1, validWords.get(i).length(),validWords.get(i));
+                    }
+                }
                 break;
             default:
                 System.out.println("Unknown Action: Use -h or --help to see all actions.");
