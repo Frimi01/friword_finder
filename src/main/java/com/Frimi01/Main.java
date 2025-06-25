@@ -17,11 +17,11 @@ import java.util.*;
 )
 public class Main implements Runnable {
 
-    @Parameters(index = "0", description = "Action: FindWord, PrintAll, IsWord")
-    private String action;
+    @Parameters(index = "0", description = "Commands: FindWord, IsWord")
+    private String command;
 
-    @CommandLine.Option(names = {"-v", "--value"}, description = "Value for action")
-    private String value;
+    @Parameters(index = "1", description = "Input of command")
+    private String input;
 
     @CommandLine.Option(names = {"--MinLength"}, description = "Minimum Length of Returned Words (default 2)")
     private Integer minl;
@@ -45,7 +45,7 @@ public class Main implements Runnable {
     }
 
 
-    // findPermutations("", value, i, foundWords);
+    // findPermutations("", input, i, foundWords);
     private void findPermutations(String prefix, String remaining, int targetLength, Set<String> results) {
         if (prefix.length() == targetLength) {
             results.add(prefix);
@@ -63,35 +63,24 @@ public class Main implements Runnable {
     public void run() {
         Set<String> Words = loadDictionaryTxt("assets/words.txt");
 
-        switch (action.toLowerCase()) {
-            case "printall":
-                System.out.println(Words);
-                break;
+        switch (command.toLowerCase()) {
             case "isword":
-                if (value == null){
-                    System.out.println("You must provide value for this command. Use -v or --value options");
+                String capValue = input.substring(0,1).toUpperCase() +
+                        input.substring(1).toLowerCase();
+                if (Words.contains(input.toLowerCase())){
+                    System.out.println(capValue + " found in dictionary");
                 } else {
-                    String capValue = value.substring(0,1).toUpperCase() +
-                            value.substring(1).toLowerCase();
-                    if (Words.contains(value.toLowerCase())){
-                        System.out.println(capValue + " found in dictionary");
-                    } else {
-                        System.out.println(capValue + " not found in dictionary");
-                    }
+                    System.out.println(capValue + " not found in dictionary");
                 }
                 break;
             case "findword":
-                if (value == null) {
-                    System.out.println("You must provide value for this command. Use -v or --value options");
-                    break;
-                }
-                if (maxl == null) {maxl = value.length() + 1;}
+                if (maxl == null) {maxl = input.length() + 1;}
                 if (minl == null) {minl = 2;}
 
                 Set<String> foundWords = new HashSet<>();
 
                 for (int i = minl; i < maxl; i++){
-                    findPermutations("", value, i, foundWords);
+                    findPermutations("", input, i, foundWords);
                 }
 
                 List<String> validWords = new ArrayList<>();
