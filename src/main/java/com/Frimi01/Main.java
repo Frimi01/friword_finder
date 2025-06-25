@@ -23,10 +23,10 @@ public class Main implements Runnable {
     @Parameters(index = "1", description = "Input of command")
     private String input;
 
-    @CommandLine.Option(names = {"--MinLength"}, description = "Minimum Length of Returned Words (default 2)")
+    @CommandLine.Option(names = {"-mnl", "--MinLength"}, description = "Minimum Length of FindWord output (default 2)")
     private Integer minl;
 
-    @CommandLine.Option(names = {"--MaxLength"}, description = "Maximum Length of Returned Words")
+    @CommandLine.Option(names = {"-mxl", "--MaxLength"}, description = "Maximum Length of FindWord output")
     private Integer maxl;
 
     public static void main(String[] args) {
