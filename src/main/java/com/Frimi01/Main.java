@@ -1,5 +1,4 @@
 package com.Frimi01;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -8,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 @Command(
         name = "friword-finder",
@@ -15,7 +15,7 @@ import java.util.*;
         version = "1.0",
         description = "Helps find words from provided dictionary"
 )
-public class Main implements Runnable {
+public class Main implements Callable<Integer> {
 
     @Parameters(index = "0", description = "Commands: FindWord, IsWord")
     private String command;
@@ -29,6 +29,9 @@ public class Main implements Runnable {
     @CommandLine.Option(names = {"-mxl", "--MaxLength"}, description = "Maximum Length of FindWord output")
     private Integer maxl;
 
+    @CommandLine.Option(names = {"-debug"}, description = "enables extra debug information")
+    private boolean debugflag;
+
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
         System.exit(exitCode);
@@ -38,10 +41,8 @@ public class Main implements Runnable {
         try {
             return new HashSet<>(Files.readAllLines(Paths.get(path)));
         } catch (IOException e) {
-            System.err.println("Error: Dictionary text file not found or unreadable!");
-            System.exit(1);
+            throw new RuntimeException("Error: Dictionary text file not found or unreadable!");
         }
-        return Collections.emptySet();
     }
 
 
@@ -60,7 +61,20 @@ public class Main implements Runnable {
     }
 
     @Override
-    public void run() {
+    public Integer call(){
+        int code;
+        try {
+            code = run();
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            code = 1;
+        }
+        if (debugflag) {
+            System.out.println("Program shutting down with exitCode: " + code);
+        }
+        return code;
+    }
+    public int run() {
         Set<String> Words = loadDictionaryTxt("assets/words.txt");
 
         switch (command.toLowerCase()) {
@@ -74,7 +88,7 @@ public class Main implements Runnable {
                 }
                 break;
             case "findword":
-                if (maxl == null) {maxl = input.length() + 1;}
+                if (maxl == null) {maxl = input.length();}
                 if (minl == null) {minl = 2;}
 
                 Set<String> foundWords = new HashSet<>();
@@ -101,7 +115,10 @@ public class Main implements Runnable {
                 }
                 break;
             default:
-                System.out.println("Unknown Action: Use -h or --help to see all actions.");
+                System.err.println("Unknown command: " + command);
+                CommandLine.usage(this, System.out);
+                return 1;
         }
+        return 0;
     }
 }
