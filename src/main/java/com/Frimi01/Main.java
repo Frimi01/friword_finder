@@ -88,6 +88,10 @@ public class Main implements Callable<Integer> {
                 }
                 break;
             case "findword":
+                if (input.length() > 10) {
+                    System.err.println("Input too long for findWord command (limit 10). Permutations need exponential ram");
+                    return 1;
+                }
                 if (maxl == null) {maxl = input.length();}
                 if (minl == null) {minl = 2;}
 
