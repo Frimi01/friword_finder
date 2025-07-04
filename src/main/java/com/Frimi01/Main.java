@@ -30,7 +30,10 @@ public class Main implements Callable<Integer> {
     private Integer maxl;
 
     @CommandLine.Option(names = {"-debug"}, description = "enables extra debug information")
-    private boolean debugflag;
+    private boolean debugFlag;
+
+    @CommandLine.Option(names = {"--noWarn"}, description = "Executes commands despite set limits (Caution!)")
+    private boolean ignoreWarnings;
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -47,16 +50,63 @@ public class Main implements Callable<Integer> {
 
 
     // findPermutations("", input, i, foundWords);
-    private void findPermutations(String prefix, String remaining, int targetLength, Set<String> results) {
+    private void findPermutations(String prefix, String remaining, int targetLength, Set<String> words, Trie trie, Set<String> foundWords) {
+        if (!trie.isPrefix(prefix)) return;
         if (prefix.length() == targetLength) {
-            results.add(prefix);
-            return;
+            if (words.contains(prefix.toLowerCase())) {
+                foundWords.add(prefix);
+            }
         }
 
         for (int i = 0; i < remaining.length(); i++) {
             String newPrefix = prefix + remaining.charAt(i);
             String newRemaining = remaining.substring(0, i) + remaining.substring(i + 1);
-            findPermutations(newPrefix, newRemaining, targetLength, results);
+            findPermutations(newPrefix, newRemaining, targetLength, words, trie, foundWords);
+        }
+    }
+
+    class TrieNode {
+        TrieNode[] children = new TrieNode[26];
+        boolean isWord = false;
+    }
+
+    class Trie {
+        private final TrieNode root = new TrieNode();
+
+        private int index(char ch) {
+            return ch - 'a';
+        }
+
+        public void insert(String word) {
+            TrieNode node = root;
+            for (char ch : word.toLowerCase().toCharArray()) {
+                int idx = index(ch);
+                if (node.children[idx] == null) {
+                    node.children[idx] = new TrieNode();
+                }
+                node = node.children[idx];
+            }
+            node.isWord = true;
+        }
+
+        public boolean isWord(String word) {
+            TrieNode node = root;
+            for (char ch : word.toLowerCase().toCharArray()) {
+                int idx = index(ch);
+                if (node.children[idx] == null) return false;
+                node = node.children[idx];
+            }
+            return node.isWord;
+        }
+
+        public boolean isPrefix(String prefix) {
+            TrieNode node = root;
+            for (char ch : prefix.toLowerCase().toCharArray()) {
+                int idx = index(ch);
+                if (node.children[idx] == null) return false;
+                node = node.children[idx];
+            }
+            return true;
         }
     }
 
@@ -69,7 +119,7 @@ public class Main implements Callable<Integer> {
             System.err.println(e.getMessage());
             code = 1;
         }
-        if (debugflag) {
+        if (debugFlag) {
             System.out.println("Program shutting down with exitCode: " + code);
         }
         return code;
@@ -88,34 +138,50 @@ public class Main implements Callable<Integer> {
                 }
                 break;
             case "findword":
-                if (input.length() > 10) {
-                    System.err.println("Input too long for findWord command (limit 10). Permutations need exponential ram");
+                if (maxl == null) {maxl = input.length() + 1;}
+                if (minl == null) {minl = 2;}
+                if ((maxl > input.length() + 1 || maxl > 10) && !ignoreWarnings) {
+                    System.err.println("Input too long for findWord command (limit 10). Long inputs can take time or have a lot of results. --noWarn to continue anyway.");
                     return 1;
                 }
-                if (maxl == null) {maxl = input.length();}
-                if (minl == null) {minl = 2;}
+                if (minl < 1) {
+                    System.err.println("Length of string cannot be smaller than 1.");
+                    return 1;
+                }
 
                 Set<String> foundWords = new HashSet<>();
+                Trie trie = new Trie();
+                try {
+                    for (String word : Files.readAllLines(Paths.get("assets/words.txt"))) {
+                        trie.insert(word);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
                 for (int i = minl; i < maxl; i++){
-                    findPermutations("", input, i, foundWords);
+                    findPermutations("", input, i, Words, trie, foundWords);
                 }
 
-                List<String> validWords = new ArrayList<>();
-                for (String word : foundWords){
-                    if (Words.contains(word.toLowerCase())){
-                        validWords.add(word.toLowerCase());
-                    }
-                }
+                List<String> resultList = new ArrayList<>(foundWords);
 
-                validWords.sort((a, b) -> Integer.compare(b.length(), a.length()));
-                System.out.printf("Total words found: %d\nnr| len | word\n", validWords.toArray().length);
-                for (int i = 0; i < validWords.size(); i++) {
-                    if (i < 9){
-                        System.out.printf("%d.  (%d) | %s\n", i + 1, validWords.get(i).length(),validWords.get(i));
-                    } else{
-                        System.out.printf("%d. (%d) | %s\n", i + 1, validWords.get(i).length(),validWords.get(i));
+                resultList.sort((a, b) -> Integer.compare(b.length(), a.length()));
+                System.out.printf("Total words found: %d\nnr | len | word\n", resultList.size());
+                for (int i = 0; i < resultList.size(); i++) {
+                    System.out.printf("%3d. (%d) | %s\n", i + 1, resultList.get(i).length(), resultList.get(i));
+                }
+                
+                if (debugFlag){
+                    int trueWords = 0;
+                    int falseWords = 0;
+                    for (String word : resultList){
+                        if (Words.contains(word)){
+                            trueWords++;
+                        } else {
+                            falseWords++;
+                        }
                     }
+                    System.out.printf("\nChecked words are true: %d and false: %d\n", trueWords, falseWords);
                 }
                 break;
             default:
