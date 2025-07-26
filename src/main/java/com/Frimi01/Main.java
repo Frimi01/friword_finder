@@ -1,4 +1,5 @@
 package com.Frimi01;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -9,12 +10,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 
-@Command(
-        name = "friword-finder",
-        mixinStandardHelpOptions = true,
-        version = "1.0",
-        description = "Helps find words from provided dictionary"
-)
+@Command(name = "friword-finder", mixinStandardHelpOptions = true, version = "1.0", description = "Helps find words from provided dictionary")
 public class Main implements Callable<Integer> {
 
     @Parameters(index = "0", description = "Commands: FindWord, IsWord")
@@ -23,16 +19,17 @@ public class Main implements Callable<Integer> {
     @Parameters(index = "1", description = "Input of command")
     private String input;
 
-    @CommandLine.Option(names = {"-mnl", "--MinLength"}, description = "Minimum Length of FindWord output (default 2)")
+    @CommandLine.Option(names = { "-mnl",
+            "--MinLength" }, description = "Minimum Length of FindWord output (default 2)")
     private Integer minl;
 
-    @CommandLine.Option(names = {"-mxl", "--MaxLength"}, description = "Maximum Length of FindWord output")
+    @CommandLine.Option(names = { "-mxl", "--MaxLength" }, description = "Maximum Length of FindWord output")
     private Integer maxl;
 
-    @CommandLine.Option(names = {"-debug"}, description = "enables extra debug information")
+    @CommandLine.Option(names = { "-debug" }, description = "enables extra debug information")
     private boolean debugFlag;
 
-    @CommandLine.Option(names = {"--noWarn"}, description = "Executes commands despite set limits (Caution!)")
+    @CommandLine.Option(names = { "--noWarn" }, description = "Executes commands despite set limits (Caution!)")
     private boolean ignoreWarnings;
 
     public static void main(String[] args) {
@@ -48,10 +45,11 @@ public class Main implements Callable<Integer> {
         }
     }
 
-
     // findPermutations("", input, i, foundWords);
-    private void findPermutations(String prefix, String remaining, int targetLength, Set<String> words, Trie trie, Set<String> foundWords) {
-        if (!trie.isPrefix(prefix)) return;
+    private void findPermutations(String prefix, String remaining, int targetLength, Set<String> words, Trie trie,
+            Set<String> foundWords) {
+        if (!trie.isPrefix(prefix))
+            return;
         if (prefix.length() == targetLength) {
             if (words.contains(prefix.toLowerCase())) {
                 foundWords.add(prefix);
@@ -65,6 +63,7 @@ public class Main implements Callable<Integer> {
         }
     }
 
+    // Trie class
     class TrieNode {
         TrieNode[] children = new TrieNode[26];
         boolean isWord = false;
@@ -93,7 +92,8 @@ public class Main implements Callable<Integer> {
             TrieNode node = root;
             for (char ch : word.toLowerCase().toCharArray()) {
                 int idx = index(ch);
-                if (node.children[idx] == null) return false;
+                if (node.children[idx] == null)
+                    return false;
                 node = node.children[idx];
             }
             return node.isWord;
@@ -103,15 +103,28 @@ public class Main implements Callable<Integer> {
             TrieNode node = root;
             for (char ch : prefix.toLowerCase().toCharArray()) {
                 int idx = index(ch);
-                if (node.children[idx] == null) return false;
+                if (node.children[idx] == null)
+                    return false;
                 node = node.children[idx];
             }
             return true;
         }
     }
 
+    // Binary prefix search
+    public void binaryPrefixSearch(arrayList arr, String target) {
+        int left = 0;
+        int right = arr.length - 1;
+        int result = -1;
+
+    }
+
+
+
+
+
     @Override
-    public Integer call(){
+    public Integer call() {
         int code;
         try {
             code = run();
@@ -124,24 +137,32 @@ public class Main implements Callable<Integer> {
         }
         return code;
     }
+
     public int run() {
         Set<String> Words = loadDictionaryTxt("assets/words.txt");
 
         switch (command.toLowerCase()) {
+
             case "isword":
-                String capValue = input.substring(0,1).toUpperCase() +
+                String capValue = input.substring(0, 1).toUpperCase() +
                         input.substring(1).toLowerCase();
-                if (Words.contains(input.toLowerCase())){
+                if (Words.contains(input.toLowerCase())) {
                     System.out.println(capValue + " found in dictionary");
                 } else {
                     System.out.println(capValue + " not found in dictionary");
                 }
                 break;
+
             case "findword":
-                if (maxl == null) {maxl = input.length() + 1;}
-                if (minl == null) {minl = 2;}
+                if (maxl == null) {
+                    maxl = input.length() + 1;
+                }
+                if (minl == null) {
+                    minl = 2;
+                }
                 if ((maxl > input.length() + 1 || maxl > 10) && !ignoreWarnings) {
-                    System.err.println("Input too long for findWord command (limit 10). Long inputs can take time or have a lot of results. --noWarn to continue anyway.");
+                    System.err.println(
+                            "Input too long for findWord command (limit 10). Long inputs can take time or have a lot of results. --noWarn to continue anyway.");
                     return 1;
                 }
                 if (minl < 1) {
@@ -159,7 +180,7 @@ public class Main implements Callable<Integer> {
                     throw new RuntimeException(e);
                 }
 
-                for (int i = minl; i < maxl; i++){
+                for (int i = minl; i < maxl; i++) {
                     findPermutations("", input, i, Words, trie, foundWords);
                 }
 
@@ -170,12 +191,12 @@ public class Main implements Callable<Integer> {
                 for (int i = 0; i < resultList.size(); i++) {
                     System.out.printf("%3d. (%d) | %s\n", i + 1, resultList.get(i).length(), resultList.get(i));
                 }
-                
-                if (debugFlag){
+
+                if (debugFlag) {
                     int trueWords = 0;
                     int falseWords = 0;
-                    for (String word : resultList){
-                        if (Words.contains(word)){
+                    for (String word : resultList) {
+                        if (Words.contains(word)) {
                             trueWords++;
                         } else {
                             falseWords++;
@@ -184,6 +205,7 @@ public class Main implements Callable<Integer> {
                     System.out.printf("\nChecked words are true: %d and false: %d\n", trueWords, falseWords);
                 }
                 break;
+
             default:
                 System.err.println("Unknown command: " + command);
                 CommandLine.usage(this, System.out);
