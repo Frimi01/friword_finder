@@ -112,16 +112,40 @@ public class Main implements Callable<Integer> {
     }
 
     // Binary prefix search
-    public void binaryPrefixSearch(arrayList arr, String target) {
+    public static List<String> binaryPrefixSearch(String[] arr, String target) {
         int left = 0;
         int right = arr.length - 1;
         int result = -1;
 
+        while (left <= right) {
+            const mid = Math.floor((left + right) / 2);
+            if (arr[mid].startsWith(target)) {
+                result = mid;
+                right = mid - 1;
+            } else if (arr[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        if (result == -1) {
+            return result;
+        } else {
+            left = result;
+            right = result;
+            while (right + 1 < arr.length && arr[right + 1].startsWith(target)) {
+                right++;
+            }
+
+            let results = [];
+            for (int i = left; i <= right; i++) {
+                results.y
+                
+            }
+        }
+
     }
-
-
-
-
 
     @Override
     public Integer call() {
@@ -153,7 +177,7 @@ public class Main implements Callable<Integer> {
                 }
                 break;
 
-            case "findword":
+            case "scrambleWord":
                 if (maxl == null) {
                     maxl = input.length() + 1;
                 }
@@ -204,6 +228,25 @@ public class Main implements Callable<Integer> {
                     }
                     System.out.printf("\nChecked words are true: %d and false: %d\n", trueWords, falseWords);
                 }
+                break;
+
+            case "findWord"
+                if (!process.argv[3]) {
+                    System.out.println('missing one or more paramaters. 1 path to json dictonary. 2 search query.');
+                    System.out.println('debug: ', WORDS);
+                } else {
+                    String[] results = binarySearch(WORDS, process.argv[3]);
+
+                    if (results != -1) {
+                        System.out.println('results found: ' + results.length)
+                        for (let i = 0; i < results.length; i++) {
+                            System.out.println(i + 1, results[i]);
+                        }
+                    } else {
+                        System.out.println("no words found");
+                    }
+                }
+
                 break;
 
             default:
