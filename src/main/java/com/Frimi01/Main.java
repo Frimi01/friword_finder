@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 @Command(name = "friword-finder", mixinStandardHelpOptions = true, version = "1.0", description = "Helps find words from provided dictionary")
 public class Main implements Callable<Integer> {
 
-    @Parameters(index = "0", description = "Commands: FindWord, IsWord")
+    @Parameters(index = "0", description = "Commands: findword, scrambleword, isword")
     private String command;
 
     @Parameters(index = "1", description = "Input of command")
@@ -162,6 +162,10 @@ public class Main implements Callable<Integer> {
     }
 
     public int run() {
+        if (!input.matches("[A-Za-z\\-]+") && !ignoreWarnings) {
+            System.out.println("Some commands may fail if input contains values outside a-z. You may use --noWarn to ignore this warning.");
+            return 1;
+        }
         Set<String> Words = loadDictionaryTxt("assets/words.txt");
 
         switch (command.toLowerCase()) {
@@ -176,7 +180,7 @@ public class Main implements Callable<Integer> {
                 }
                 break;
 
-            case "scrambleWord":
+            case "scrambleword":
                 if (maxl == null) {
                     maxl = input.length() + 1;
                 }
@@ -195,13 +199,7 @@ public class Main implements Callable<Integer> {
 
                 Set<String> foundWords = new HashSet<>();
                 Trie trie = new Trie();
-                try {
-                    for (String word : Files.readAllLines(Paths.get("assets/words.txt"))) {
-                        trie.insert(word);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                for (String word : Words) { trie.insert(word); };
 
                 for (int i = minl; i < maxl; i++) {
                     findPermutations("", input, i, Words, trie, foundWords);
