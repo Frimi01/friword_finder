@@ -118,11 +118,11 @@ public class Main implements Callable<Integer> {
         int result = -1;
 
         while (left <= right) {
-            const mid = Math.floor((left + right) / 2);
+            int mid = (left + right) / 2;
             if (arr[mid].startsWith(target)) {
                 result = mid;
                 right = mid - 1;
-            } else if (arr[mid] < target) {
+            } else if (arr[mid].compareTo(target) < 0) {
                 left = mid + 1;
             } else {
                 right = mid - 1;
@@ -130,7 +130,7 @@ public class Main implements Callable<Integer> {
         }
 
         if (result == -1) {
-            return result;
+            return Collections.emptyList();
         } else {
             left = result;
             right = result;
@@ -138,13 +138,12 @@ public class Main implements Callable<Integer> {
                 right++;
             }
 
-            let results = [];
+            List<String> results = new ArrayList<>();
             for (int i = left; i <= right; i++) {
-                results.y
-                
+                results.add(arr[i]);
             }
+            return results;
         }
-
     }
 
     @Override
@@ -230,23 +229,19 @@ public class Main implements Callable<Integer> {
                 }
                 break;
 
-            case "findWord"
-                if (!process.argv[3]) {
-                    System.out.println('missing one or more paramaters. 1 path to json dictonary. 2 search query.');
-                    System.out.println('debug: ', WORDS);
-                } else {
-                    String[] results = binarySearch(WORDS, process.argv[3]);
+            case "findword":
+                String[] wordsArray = Words.toArray(new String[0]);
+                Arrays.sort(wordsArray);
+                List<String> searchResults = binaryPrefixSearch(wordsArray, input);
 
-                    if (results != -1) {
-                        System.out.println('results found: ' + results.length)
-                        for (let i = 0; i < results.length; i++) {
-                            System.out.println(i + 1, results[i]);
-                        }
-                    } else {
-                        System.out.println("no words found");
+                if (searchResults.isEmpty()) {
+                    System.out.println("No words found");
+                } else {
+                    System.out.println("Results found: " + searchResults.size());
+                    for (int i = 0; i < searchResults.size(); i++) {
+                        System.out.println((i + 1) + ". " + searchResults.get(i));
                     }
                 }
-
                 break;
 
             default:
